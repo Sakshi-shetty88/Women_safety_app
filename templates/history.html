@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>History - Women Safety</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+  min-height: 100vh;
+  padding-bottom: 80px;
+}
+.header {
+  background: rgba(255,255,255,0.3);
+  padding: 1.5rem;
+  color: #333;
+  text-align: center;
+  backdrop-filter: blur(10px);
+}
+.container {
+  padding: 1.5rem;
+  max-width: 500px;
+  margin: 0 auto;
+}
+.alert-card {
+  background: white;
+  padding: 1.2rem;
+  border-radius: 12px;
+  margin-bottom: 1rem;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+.alert-type {
+  display: inline-block;
+  background: #ff4757;
+  color: white;
+  padding: 0.3rem 0.8rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+}
+.alert-time {
+  color: #666;
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+}
+.alert-location {
+  color: #333;
+  margin-bottom: 0.3rem;
+}
+.alert-contacts {
+  color: #667eea;
+  font-weight: 500;
+}
+
+/* Bottom Navigation */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: white;
+  display: flex;
+  justify-content: space-around;
+  padding: 1rem 0;
+  box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+}
+.nav-item {
+  text-align: center;
+  color: #666;
+  text-decoration: none;
+  flex: 1;
+  transition: color 0.3s;
+}
+.nav-item.active { color: #667eea; }
+.nav-item:hover { color: #667eea; }
+.nav-icon { font-size: 1.5rem; display: block; margin-bottom: 0.2rem; }
+.nav-label { font-size: 0.7rem; }
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>📋 Alert History</h1>
+</div>
+
+<div class="container" id="historyList">
+</div>
+
+<div class="bottom-nav">
+  <a href="/home" class="nav-item">
+    <span class="nav-icon">🏠</span>
+    <span class="nav-label">Home</span>
+  </a>
+  <a href="/contacts" class="nav-item">
+    <span class="nav-icon">👥</span>
+    <span class="nav-label">Contacts</span>
+  </a>
+  <a href="/history" class="nav-item active">
+    <span class="nav-icon">📋</span>
+    <span class="nav-label">History</span>
+  </a>
+  <a href="#" class="nav-item" onclick="logout()">
+    <span class="nav-icon">🚪</span>
+    <span class="nav-label">Logout</span>
+  </a>
+</div>
+
+<script>
+async function fetchHistory() {
+  const res = await fetch('/api/history');
+  const history = await res.json();
+  const list = document.getElementById('historyList');
+  
+  if(history.length === 0) {
+    list.innerHTML = '<p style="text-align:center; color:#999; margin-top:2rem;">No alerts sent yet</p>';
+    return;
+  }
+  
+  list.innerHTML = history.map(h => `
+    <div class="alert-card">
+      <span class="alert-type">${h.type}</span>
+      <div class="alert-time">📅 ${new Date(h.timestamp).toLocaleString()}</div>
+      <div class="alert-location">📍 Location: ${h.location}</div>
+      <div class="alert-contacts">👥 Contacts Notified: ${h.contacts_notified}</div>
+    </div>
+  `).join('');
+}
+
+async function logout() {
+  await fetch('/api/logout', {method: 'POST'});
+  window.location.href = '/';
+}
+
+fetchHistory();
+</script>
+</body>
+</html>

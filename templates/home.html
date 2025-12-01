@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sakhi - Women Safety</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pacifico&family=Poppins:wght@600;700&display=swap">
+<link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+<meta name="theme-color" content="#667eea">
+
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  min-height: 100vh;
+  padding-bottom: 80px;
+}
+.header {
+  background: rgba(255,255,255,0.2);
+  padding: 1.5rem;
+  color: white;
+  text-align: center;
+  backdrop-filter: blur(10px);
+}
+.header h1 {
+  font-family: "Poppins", "Segoe UI", sans-serif;
+  font-weight: 700;
+}
+.sakhi-brand {
+  font-family: "Pacifico", cursive;
+  letter-spacing: 1px;
+}
+.container {
+  padding: 2rem;
+  max-width: 500px;
+  margin: 0 auto;
+}
+.sos-container {
+  text-align: center;
+  margin: 3rem 0;
+}
+.sos-btn {
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #ff0844 0%, #ffb199 100%);
+  border: none;
+  color: white;
+  font-size: 2rem;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 10px 40px rgba(255,8,68,0.4);
+  transition: transform 0.3s, box-shadow 0.3s;
+  animation: pulse 2s infinite;
+}
+.sos-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 15px 50px rgba(255,8,68,0.6);
+}
+.sos-btn:active {
+  transform: scale(0.95);
+}
+@keyframes pulse {
+  0%, 100% { box-shadow: 0 10px 40px rgba(255,8,68,0.4); }
+  50% { box-shadow: 0 10px 60px rgba(255,8,68,0.7); }
+}
+.quick-actions {
+  background: white;
+  border-radius: 20px;
+  padding: 1.5rem;
+  margin-top: 2rem;
+}
+.quick-actions h3 {
+  color: #333;
+  margin-bottom: 1rem;
+}
+.action-btn {
+  display: block;
+  width: 100%;
+  padding: 1rem;
+  margin: 0.5rem 0;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 1rem;
+  cursor: pointer;
+  text-decoration: none;
+  text-align: center;
+  transition: transform 0.2s;
+}
+.action-btn:hover { transform: translateY(-2px); }
+
+/* Bottom Navigation */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: white;
+  display: flex;
+  justify-content: space-around;
+  padding: 1rem 0;
+  box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+}
+.nav-item {
+  text-align: center;
+  color: #666;
+  text-decoration: none;
+  flex: 1;
+  transition: color 0.3s;
+}
+.nav-item.active { color: #667eea; }
+.nav-item:hover { color: #667eea; }
+.nav-icon { font-size: 1.5rem; display: block; margin-bottom: 0.2rem; }
+.nav-label { font-size: 0.7rem; }
+
+.alert-box {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: white;
+  padding: 2rem;
+  border-radius: 15px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  display: none;
+  z-index: 1000;
+  text-align: center;
+}
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.5);
+  display: none;
+  z-index: 999;
+}
+
+/* Fake call modal styles */
+#fakeCallOverlay {display:none;position:fixed;z-index:1000;top:0;left:0;right:0;bottom:0;background:rgba(15,5,35,0.72);}
+#fakeCallModal {display:none;position:fixed;z-index:1001;top:50%;left:50%;transform:translate(-50%,-50%);background:white;border-radius:1em;box-shadow:0 8px 48px #111;font-family:sans-serif;max-width:350px;width:92%;padding:2em 1.5em;text-align:center;}
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>
+    <img src="{{ url_for('static', filename='sakhi-logo.jpg') }}"
+         alt="Sakhi logo"
+         style="height:32px; vertical-align:middle; margin-right:8px; border-radius:8px;">
+    <span class="sakhi-brand">Sakhi</span>
+  </h1>
+  <p>Har Waqt Suraksha Saath</p>
+</div>
+
+<div class="container">
+  <div class="sos-container">
+    <button class="sos-btn" id="sosBtn">🚨<br>SOS</button>
+    <p style="color:white; margin-top:1rem; font-size:0.9rem;">Press for Emergency Alert</p>
+  </div>
+  <div class="quick-actions">
+    <h3>Quick Actions</h3>
+    <button class="action-btn" onclick="callPolice()">📞 Call Police (100)</button>
+    <button class="action-btn" onclick="callWomen()">📞 Women Helpline (1091)</button>
+    <button class="action-btn" onclick="fakeCall()">📱 Fake Call</button>
+
+    <button id="sosButton" onclick="triggerSOS()">EMERGENCY SOS</button>
+    <div id="status"></div>
+
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/sos.js') }}"></script>
+  </div>
+</div>
+
+<div class="bottom-nav">
+  <a href="/home" class="nav-item active">
+    <span class="nav-icon">🏠</span>
+    <span class="nav-label">Home</span>
+  </a>
+  <a href="/contacts" class="nav-item">
+    <span class="nav-icon">👥</span>
+    <span class="nav-label">Contacts</span>
+  </a>
+  <a href="/history" class="nav-item">
+    <span class="nav-icon">📋</span>
+    <span class="nav-label">History</span>
+  </a>
+  <a href="#" class="nav-item" onclick="logout()">
+    <span class="nav-icon">🚪</span>
+    <span class="nav-label">Logout</span>
+  </a>
+</div>
+
+<div class="overlay" id="overlay"></div>
+<div class="alert-box" id="alertBox">
+  <h2 style="color:#667eea; margin-bottom:1rem;">SOS Alert Sent!</h2>
+  <p id="alertMessage"></p>
+  <button style="margin-top:1rem; padding:0.5rem 2rem; background:#667eea; color:white; border:none; border-radius:10px; cursor:pointer;" onclick="closeAlert()">OK</button>
+</div>
+
+<div id="fakeCallOverlay"></div>
+<div id="fakeCallModal">
+  <div style="font-size:2.4em;">📱</div>
+  <div style="margin:1.2em 0 0.3em 0;"><b>Incoming call...</b></div>
+  <div style="color:#665ae7;font-size:1.1em"><span id="fakeCallName">Mom</span></div>
+  <div id="callButtons" style="margin-top:1.7em;">
+    <button onclick="pickupFakeCall()" style="background:#22c55e;color:#fff;font-weight:600;font-size:1.1em;padding:0.7em 2em;border:none;border-radius:10px;margin:0 1em;">Answer</button>
+    <button onclick="closeFakeCall()" style="background:#ef4444;color:#fff;font-weight:600;font-size:1.1em;padding:0.7em 2em;border:none;border-radius:10px;margin:0 1em;">Decline</button>
+  </div>
+  <div id="fakeAudioMsg" style="margin-top:1.3em;font-size:1.04em;display:none;color:#333;">
+    👩‍🦰: Hello beta, where are you? Please come home, I'm waiting for you.
+  </div>
+  <button id="endCallBtn" onclick="closeFakeCall()" style="display:none;margin-top:2em;background:#ffa32a;color:white;border:none;border-radius:10px;padding:0.7em 2em;font-size:1em;">End Call</button>
+</div>
+<audio id="ringtone" src="https://cdn.pixabay.com/audio/2022/07/26/audio_123rfb2.mp3"></audio>
+
+<script>
+function closeAlert() {
+  document.getElementById('overlay').style.display = 'none';
+  document.getElementById('alertBox').style.display = 'none';
+}
+function callPolice() { window.location.href = 'tel:100'; }
+function callWomen() { window.location.href = 'tel:1091'; }
+
+function fakeCall() {
+  document.getElementById('fakeCallOverlay').style.display = '';
+  document.getElementById('fakeCallModal').style.display = '';
+  document.getElementById('ringtone').currentTime = 0;
+  document.getElementById('ringtone').play();
+  document.getElementById('fakeAudioMsg').style.display = 'none';
+  document.getElementById('callButtons').style.display = '';
+  document.getElementById('endCallBtn').style.display = 'none';
+}
+function pickupFakeCall() {
+  document.getElementById('ringtone').pause();
+  document.getElementById('callButtons').style.display = 'none';
+  document.getElementById('fakeAudioMsg').style.display = '';
+  document.getElementById('endCallBtn').style.display = '';
+}
+function closeFakeCall() {
+  document.getElementById('fakeCallOverlay').style.display = 'none';
+  document.getElementById('fakeCallModal').style.display = 'none';
+  document.getElementById('ringtone').pause();
+  document.getElementById('ringtone').currentTime = 0;
+}
+async function logout() {
+  await fetch('/api/logout', {method: 'POST'});
+  window.location.href = '/';
+}
+</script>
+
+<script>
+  const sosBtn = document.getElementById('sosBtn');
+  if (sosBtn && typeof triggerSOS === 'function') {
+    sosBtn.addEventListener('click', function () {
+      triggerSOS(true);
+    });
+  }
+</script>
+
+</body>
+</html>

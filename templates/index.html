@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Women Safety App</title>
+<style>
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0; padding: 0;
+    background: linear-gradient(135deg, #f27121, #e94057);
+    color: #fff;
+  }
+  .container {
+    max-width: 960px;
+    margin: 2rem auto;
+    background: rgba(255 255 255 / 0.1);
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: 0 0 20px rgba(255 255 255 / 0.2);
+  }
+  h1, h2 {
+    text-align: center;
+    margin-bottom: 1rem;
+  }
+  button {
+    background-color: #e94057;
+    border: none;
+    padding: 1rem 2rem;
+    border-radius: 10px;
+    font-size: 1.4rem;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    display: block;
+    margin: 1rem auto;
+  }
+  button:hover {
+    background-color: #f27121;
+  }
+  .contacts, .alerts {
+    margin-top: 1rem;
+  }
+  .card {
+    background: rgba(255 255 255 / 0.2);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+  }
+  label {
+    display: block;
+    margin: 0.5rem 0 0.3rem;
+  }
+  input, select {
+    width: 100%;
+    padding: 0.5rem;
+    border-radius: 6px;
+    border: none;
+    font-size: 1rem;
+  }
+  .row {
+    display: flex;
+    gap: 1rem;
+  }
+  .col {
+    flex: 1;
+  }
+  .dark-mode {
+    background: linear-gradient(135deg, #292929, #0f0f0f);
+    color: #eee;
+  }
+</style>
+</head>
+<body>
+  <div class="container" id="app">
+
+    <h1>Women Safety App</h1>
+
+    <button id="sosButton">🚨 Send SOS Alert</button>
+
+    <section class="contacts">
+      <h2>Emergency Contacts</h2>
+      <div id="contactList"></div>
+      <h3>Add Contact</h3>
+      <div class="row">
+        <div class="col">
+          <label for="contactName">Name</label>
+          <input type="text" id="contactName" />
+        </div>
+        <div class="col">
+          <label for="contactPhone">Phone</label>
+          <input type="text" id="contactPhone" />
+        </div>
+        <div class="col">
+          <label for="contactRelation">Relationship</label>
+          <input type="text" id="contactRelation" />
+        </div>
+      </div>
+      <button id="addContactBtn">Add Contact</button>
+    </section>
+
+    <section class="alerts">
+      <h2>Alert History</h2>
+      <div id="alertList"></div>
+    </section>
+
+  </div>
+
+<script>
+const apiBase = ''; // relative to Flask backend
+
+// UI Elements
+const sosButton = document.getElementById('sosButton');
+const contactList = document.getElementById('contactList');
+const alertList = document.getElementById('alertList');
+const addContactBtn = document.getElementById('addContactBtn');
+const contactName = document.getElementById('contactName');
+const contactPhone = document.getElementById('contactPhone');
+const contactRelation = document.getElementById('contactRelation');
+
+// Fetch and render contacts
+async function fetchContacts() {
+  const res = await fetch(apiBase + '/api/contacts');
+  const contacts = await res.json();
+  renderContacts(contacts);
+}
+
+// Render contacts list
+function renderContacts(contacts) {
+  contactList.innerHTML = '';
+  contacts.forEach(c => {
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML = `
+      <strong>${c.name}</strong> (${c.relationship})<br/>
+      📞 ${c.phone}
+      <button onclick="deleteContact(${c.id})" style="float:right;background:#d32f2f;color:#fff;border:none;padding:0.2rem 0.5rem;border-radius:5px;cursor:pointer;">Delete</button>
+    `;
+    contactList.appendChild(card);
+  });
+}
+
+// Add new contact
+addContactBtn.addEventListener('click', async () => {
+  const name = contactName.value.trim();
+  const phone = contactPhone.value.trim();
+  const relationship = contactRelation.value.trim();
+  if (!name || !phone || !relationship) {
+    alert('Please fill all fields');
+    return;
+  }
+  const res = await fetch(apiBase + '/api/contacts', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({name, phone, relationship})
+  });
+  if(res.ok) {
+    contactName.value = '';
+    contactPhone.value = '';
+    contactRelation.value = '';
+    fetchContacts();
+  } else {
+    alert('Failed to add contact');
+  }
+});
+
+// Delete contact
+async function deleteContact(id) {
+  const res = await fetch(apiBase + '/api/contacts/' + id, {
+    method: 'DELETE'
+  });
+  if(res.ok) {
+    fetchContacts();
+  } else {
+    alert('Failed to delete contact');
+  }
+}
+
+// Fetch alert history
+async function fetchAlerts() {
+  const res = await fetch(apiBase + '/api/history');
+  const alerts = await res.json();
+  renderAlerts(alerts);
+}
+
+// Render alert history
+function renderAlerts(alerts) {
+  alertList.innerHTML = '';
+  alerts.forEach(a => {
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML = `
+      <strong>${a.type}</strong> - ${new Date(a.timestamp).toLocaleString()}<br/>
+      Location: ${a.location}<br/>
+      Contacts Notified: ${a.contacts_notified}
+    `;
+    alertList.appendChild(card);
+  });
+}
+
+// Send SOS alert
+sosButton.addEventListener('click', async () => {
+  let location = 'Unknown';
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(pos => {
+      location = `Lat: ${pos.coords.latitude.toFixed(3)}, Lon: ${pos.coords.longitude.toFixed(3)}`;
+      sendAlert(location);
+    }, () => {
+      sendAlert(location);
+    });
+  } else {
+    sendAlert(location);
+  }
+});
+
+async function sendAlert(location) {
+  const res = await fetch(apiBase + '/api/sos', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({location})
+  });
+  const data = await res.json();
+  alert(data.message);
+  fetchAlerts();
+}
+
+// Initial load
+fetchContacts();
+fetchAlerts();
+
+</script>
+</body>
+</html>

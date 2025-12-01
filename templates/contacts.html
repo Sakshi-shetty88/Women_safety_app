@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Contacts - Women Safety</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+  min-height: 100vh;
+  padding-bottom: 90px;
+}
+.header {
+  background: rgba(255,255,255,0.3);
+  padding: 1.5rem;
+  color: #333;
+  text-align: center;
+}
+.container {
+  padding: 1.5rem;
+  max-width: 500px;
+  margin: 0 auto;
+}
+.add-form {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 15px;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+.add-form h3 { color: #667eea; margin-bottom: 1rem; }
+label { display: block; margin: 0.8rem 0 0.3rem; color: #333; font-weight: 500; font-size: 0.9rem; }
+input {
+  width: 100%;
+  padding: 0.7rem;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 1rem;
+}
+input:focus { outline: none; border-color: #667eea; }
+.btn-add {
+  width: 100%;
+  padding: 0.8rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 1rem;
+}
+.contacts-list h3 {
+  color: #333;
+  margin-bottom: 1rem;
+}
+.contact-card {
+  background: white;
+  padding: 1rem;
+  border-radius: 10px;
+  margin-bottom: 0.8rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+}
+.contact-info {
+  flex: 1;
+}
+.contact-name {
+  font-weight: bold;
+  color: #333;
+  font-size: 1.1rem;
+}
+.contact-phone { color: #666; font-size: 0.95rem; margin-top:4px;}
+.contact-email { color: #a255a2; font-size: 0.97rem; margin-top:4px;}
+.contact-rel { color: #667eea; font-size: 0.93rem; margin-top:4px;}
+.btn-delete, .btn-edit {
+  background: #ff4757;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1rem;
+  margin-left: 0.3em;
+  transition: background 0.14s;
+}
+.btn-edit { background: #667eea; }
+.btn-edit:hover { background: #764ba2; }
+.btn-delete:hover { background: #b60022; }
+.edit-modal, .modal-overlay { display: none; position: fixed; z-index: 200; }
+.edit-modal {
+  top:50%; left:50%; transform:translate(-50%,-50%);
+  background:#fff; border-radius:12px; padding:2rem; box-shadow:0 0 12px #aaa; min-width:280px;
+}
+.modal-overlay { top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.21); z-index:100; }
+.edit-modal input { margin-bottom: 1em; }
+/* Consistent bottom navigation using emoji/icons */
+.link-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: white;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  height: 90px;
+  box-shadow: 0 -2px 22px rgba(95,88,106,0.07);
+  z-index: 99;
+  font-size: 1.1em;
+}
+.link-nav a {
+  text-decoration: none;
+  color: #667eea;
+  font-weight: 500;
+  text-align: center;
+  transition: color 0.18s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.link-nav a.active,
+.link-nav a:hover { color: #ff4757; }
+.link-nav span { font-size: 0.95em; line-height: 1.3em; }
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>👥 Emergency Contacts</h1>
+</div>
+<div class="container">
+  <div class="add-form">
+    <h3>Add New Contact</h3>
+    <label>Name</label><input type="text" id="name" placeholder="Enter name">
+    <label>Phone Number</label><input type="tel" id="phone" placeholder="Enter phone number">
+    <label>Email</label><input type="email" id="email" placeholder="Enter email address">
+    <label>Relationship</label><input type="text" id="relationship" placeholder="e.g., Mother, Friend">
+    <button class="btn-add" onclick="addContact()">Add Contact</button>
+  </div>
+  <div class="contacts-list">
+    <h3>Your Contacts</h3>
+    <div id="contactsList"></div>
+  </div>
+</div>
+
+<!-- Edit Contact Modal -->
+<div class="modal-overlay" id="modalOverlay"></div>
+<div class="edit-modal" id="editContactModal">
+  <h3>Edit Contact</h3>
+  <form id="editContactForm">
+    <label>Name</label><input type="text" id="editName">
+    <label>Phone Number</label><input type="tel" id="editPhone">
+    <label>Email</label><input type="email" id="editEmail">
+    <label>Relationship</label><input type="text" id="editRelationship">
+    <button class="btn-edit" type="submit">Save</button>
+    <button class="btn-delete" type="button" onclick="closeEditModal()">Cancel</button>
+  </form>
+</div>
+
+<!-- Bottom Emoji Icon Navigation Bar -->
+<div class="link-nav">
+  <a href="/home"><span>🏠</span>Home</a>
+  <a href="/contacts" class="active"><span>👥</span>Contacts</a>
+  <a href="/history"><span>📋</span>History</a>
+  <a href="#" onclick="logout()"><span>🚪</span>Logout</a>
+</div>
+
+<script>
+let contacts = [];
+let editingId = null;
+async function fetchContacts() {
+  const res = await fetch('/api/contacts');
+  contacts = await res.json();
+  const list = document.getElementById('contactsList');
+  if (contacts.length === 0) {
+    list.innerHTML = '<p style="text-align:center; color:#999;">No contacts added yet</p>';
+    return;
+  }
+  list.innerHTML = contacts.map(c => `
+    <div class="contact-card">
+      <div class="contact-info">
+        <div class="contact-name">${c.name}</div>
+        <div class="contact-phone">📞 ${c.phone}</div>
+        <div class="contact-email">📧 ${c.email || ''}</div>
+        <div class="contact-rel">${c.relationship}</div>
+      </div>
+      <div>
+        <button class="btn-edit" onclick="openEditModal(${c.id})">Edit</button>
+        <button class="btn-delete" onclick="deleteContact(${c.id})">Delete</button>
+      </div>
+    </div>
+  `).join('');
+}
+async function addContact() {
+  const name = document.getElementById('name').value.trim();
+  const phone = document.getElementById('phone').value.trim();
+  const email = document.getElementById('email').value.trim();
+  const relationship = document.getElementById('relationship').value.trim();
+  if(!name || !phone || !relationship || !email) {
+    alert('Please fill all fields');
+    return;
+  }
+  await fetch('/api/contacts', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({name, phone, email, relationship})
+  });
+  document.getElementById('name').value = '';
+  document.getElementById('phone').value = '';
+  document.getElementById('email').value = '';
+  document.getElementById('relationship').value = '';
+  fetchContacts();
+}
+async function deleteContact(id) {
+  if(confirm('Delete this contact?')) {
+    await fetch(`/api/contacts/${id}`, {method: 'DELETE'});
+    fetchContacts();
+  }
+}
+function openEditModal(id) {
+  editingId = id;
+  const c = contacts.find(c => c.id === id);
+  document.getElementById('editName').value = c.name;
+  document.getElementById('editPhone').value = c.phone;
+  document.getElementById('editEmail').value = c.email || '';
+  document.getElementById('editRelationship').value = c.relationship;
+  document.getElementById('editContactModal').style.display = 'block';
+  document.getElementById('modalOverlay').style.display = 'block';
+}
+function closeEditModal() {
+  editingId = null;
+  document.getElementById('editContactModal').style.display = 'none';
+  document.getElementById('modalOverlay').style.display = 'none';
+}
+document.getElementById('editContactForm').onsubmit = async function(e) {
+  e.preventDefault();
+  const name = document.getElementById('editName').value.trim();
+  const phone = document.getElementById('editPhone').value.trim();
+  const email = document.getElementById('editEmail').value.trim();
+  const relationship = document.getElementById('editRelationship').value.trim();
+  if(!name || !phone || !email || !relationship) {
+    alert('Please fill all fields');
+    return;
+  }
+  await fetch(`/api/contacts/${editingId}`, {
+    method: 'PUT',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({name, phone, email, relationship})
+  });
+  closeEditModal();
+  fetchContacts();
+};
+async function logout() {
+  await fetch('/api/logout', {method: 'POST'});
+  window.location.href = '/';
+}
+fetchContacts();
+</script>
+</body>
+</html>
